@@ -63,10 +63,16 @@ def add_message(conn, user_id: int, data):
     c.execute('INSERT INTO user_messages (user_id, data, role, division, manager_fio, client_fio, coop, city, region, '
               'phone, email, post, direction, field, offline, count, interest, com, comment) VALUES (?, ?, ?, ?, ?, '
               '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-              (user_id, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8],
+              (data[18], data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8],
                data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]))
     conn.commit()
 
+@ensure_connection
+def get_number(conn, user_id):
+    c = conn.cursor()
+
+    nom = f"""SELECT id from user_messages where user_id = {user_id}"""
+    return nom
 
 def add_excel():
     workbook = Workbook('output.xlsx')
@@ -85,10 +91,10 @@ if __name__ == '__main__':
     # rgx_phone = re.compile(r'\+\d{11}')
     # phone_list = ["0412 345 678", "+61412345678", "+61 0412-345-678", "0412345678", "89892835369", "+79892835369", "79892835369"]
     # for x in phone_list:
-    print(re.findall(r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?", 'q@1r'))
-    if re.findall(r'\+\d{11}', "+79892q35369"):
-        print('qwe')
-
+    # print(re.findall(r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?", 'q@1r'))
+    # if re.findall(r'\+\d{11}', "+79892q35369"):
+    #     print('qwe')
+    print(get_number())
     # init_db()
     # add_message(user_id=123, text='kekf')
     # add_excel()

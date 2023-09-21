@@ -138,11 +138,11 @@ def doljnost_klienta(message):
 
 @bot.message_handler(content_types='text')
 def sotrudnich_drugoe(message):
-    bot.register_next_step_handler(bot.send_message(message.chat.id, "Город офиса клиента. Если несколько – напишите через пробел123"), start_message)
+    bot.register_next_step_handler(bot.send_message(message.chat.id, "Город офиса клиента. Если несколько – напишите через пробел"), start_message)
 
 @bot.message_handler(content_types='text')
 def gorod_klienta(message):
-    bot.register_next_step_handler(bot.send_message(message.chat.id, "Город офиса клиента. Если несколько – напишите через пробел456"), start_message)
+    bot.register_next_step_handler(bot.send_message(message.chat.id, "Город офиса клиента. Если несколько – напишите через пробел"), start_message)
 
 @bot.message_handler(content_types='text')
 def doljnost_drugoe(message):
