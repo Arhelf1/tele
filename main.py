@@ -1,14 +1,14 @@
 import telebot
 from telebot import types
 from text import HELLO
-from db import init_db, add_message, add_excel, get_number
+from db import init_db, add_message, add_excel, update_message, id_search
 import random
 import re
 
 token = "6380116131:AAEcboCnRR8Inldj914AKc2oBRRG429jZZY"
 # token = "6477369209:AAELdd8Lt8cj8m0bbMHewGLgDF9CpSVlYqs"
 bot = telebot.TeleBot(token)
-results = {a: '' for a in range(19)}
+iid = {0: 1}
 
 
 @bot.message_handler(commands=['start'])
@@ -23,7 +23,10 @@ def start_message(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     if call.data == "callback_start_anketa":
-        results[18] = call.message.from_user.id
+        result = {a: '' for a in range(19)}
+        result[18] = call.message.chat.id
+        add_message(data=result)
+        update_message(id_=id_search(user_id=call.message.chat.id), field='user_id', mean=call.message.chat.id)
         keyboard = types.InlineKeyboardMarkup(row_width=4)
         keyboard.add(types.InlineKeyboardButton(text="26.09",
                                                 callback_data="callback_date_26.09"),
@@ -37,19 +40,30 @@ def callback_query(call):
         bot.send_message(call.message.chat.id, "Дата заполнения анкеты", reply_markup=keyboard)
 
     elif "callback_date" in call.data:
-        results[0] = call.data.strip("callback_date")
-        print(results)
+        # results[0] = call.data.strip("callback_date")
+        if call.data.strip("callback_date") != '':
+            update_message(id_=id_search(user_id=call.message.chat.id), field='data',
+                           mean=call.data.strip("callback_date"))
         keyboard = types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(types.InlineKeyboardButton(text="Менеджер",
-                                                callback_data="callback_manager"),
+                                                callback_data="callback_role_m"),
                      types.InlineKeyboardButton(text="Клиент",
-                                                callback_data="callback_client"))
+                                                callback_data="callback_role_c"))
         bot.send_message(call.message.chat.id, "Вы менеджер или клиент?", reply_markup=keyboard)
 
+    elif "callback_role_m" == call.data:
+        # results[0] = call.data.strip("callback_date")
+        keyboard = types.InlineKeyboardMarkup(row_width=2)
+        keyboard.add(types.InlineKeyboardButton(text="Верно",
+                                                callback_data="callback_manager"),
+                     types.InlineKeyboardButton(text="Назад",
+                                                callback_data="callback_date"))
+        bot.send_message(call.message.chat.id, "Вы выбрали менеджер", reply_markup=keyboard)
 
     elif call.data == "callback_manager":
-        results[1] = call.data.strip("callback_")
-        print(results)
+        # results[1] = call.data.strip("callback_")
+        update_message(id_=id_search(user_id=call.message.chat.id), field='role',
+                       mean=call.data.strip("callback_"))
         keyboard = types.InlineKeyboardMarkup(row_width=3)
         keyboard.add(types.InlineKeyboardButton(text="ДСП",
                                                 callback_data="callback_m_division_dsp"),
@@ -62,34 +76,43 @@ def callback_query(call):
                      )
         bot.send_message(call.message.chat.id, "Выберите подразделение:", reply_markup=keyboard)
 
-
     elif call.data == "callback_m_division_d":
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), m_m_fio)
 
-
     elif "callback_m_division" in call.data:
         if "dsp" in call.data:
-            results[2] = "ДСП"
+            # results[2] = "ДСП"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='division',
+                           mean="ДСП")
         elif "drp" in call.data:
-            results[2] = "ДРП"
+            # results[2] = "ДРП"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='division',
+                           mean="ДРП")
         elif "mez" in call.data:
-            results[2] = "Меж.деп"
-        print(results)
+            # results[2] = "Меж.деп"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='division',
+                           mean="Меж.деп")
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Ваше ФИО"), m_fio)
 
     elif call.data == "callback_m_coop_d":
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), m_city)
 
-
     elif "callback_m_coop" in call.data:
         if "yes" in call.data:
-            results[5] = "Да"
+            # results[5] = "Да"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='coop',
+                           mean="Да")
         elif "no" in call.data:
-            results[5] = "Нет"
+            # results[5] = "Нет"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='coop',
+                           mean="Нет")
         elif "worked" in call.data:
-            results[5] = "Работали ранее, но прекратили"
-        print(results)
-        bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Город офиса клиента. Если несколько – введите через пробел"), m_region)
+            # results[5] = "Работали ранее, но прекратили"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='coop',
+                           mean="Работали ранее, но прекратили")
+        bot.register_next_step_handler(
+            bot.send_message(call.message.chat.id, "Город офиса клиента. Если несколько – введите через пробел"),
+            m_region)
 
 
     elif call.data == "callback_m_post_d":
@@ -97,35 +120,811 @@ def callback_query(call):
 
 
     elif "callback_m_post" in call.data:
-        if "dir" in call.data:
-            results[10] = "Директор"
-        elif "zak" in call.data:
-            results[10] = "Специалист по закупкам"
-        elif "sob" in call.data:
-            results[10] = "Собственник"
-        elif "opt" in call.data:
-            results[10] = "Директор по оптовому каналу"
-        elif "roz" in call.data:
-            results[10] = "Директор по розничному каналу"
-        print(results)
-        bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите название торговой точки"),
-                                       m_direction)
 
+        print(call.data)
+
+        if "dir" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Dir_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(text="Выбрано: Директор \nДолжность клиента. Если несколько, то дополните позже.",
+
+                             chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" not in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Собственник")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+                text="Выбрано: Директор, Собственник \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Dir_Opt_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Dir_Opt_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+                text="Выбрано: Директор, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" not in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Dir_Roz_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Roz_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Dir_Roz_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+                text="Выбрано: Директор, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Dir_Zak_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Zak_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Zak_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
+
+            # results[10] = "Директор"
+
+            print('qwe')
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Собственник, Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Opt_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and not "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Собственник, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор, Собственник, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Собственник, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор, Собственник, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Opt_Roz_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Dir_Sob_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу\nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+
+        elif "zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Zak_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+                text="Выбрано: Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+                text="Выбрано: Собственник, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор по оптовому каналу, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Zak_Opt_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Zak_Opt_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+                text="Выбрано: Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+
+        elif "Dir" not in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" in call.data:
+
+            # results[10] = "Директор"
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор по розничному каналу, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Zak_Roz_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Zak_Roz_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Roz_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+                text="Выбрано: Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник, Специалист по закупкам, Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Opt_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Собственник, Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник, Специалист по закупкам, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Roz_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Roz_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Собственник, Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Zak_Sob_Roz_Dir_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "sob" in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Sob_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Sob_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Sob_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Sob_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Собственник \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник, Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Sob_Opt_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Sob_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Sob_Opt_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Собственник, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" not in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Sob_Roz_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Sob_Roz_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Sob_Roz_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Собственник, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Собственник, Директор по оптовому каналу, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Sob_Opt_Roz_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Sob_Opt_Roz_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+
+
+        elif "opt" in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Opt_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Opt_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+
+                                                    callback_data="callback_m_post_del_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Opt_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор по оптовому каналу, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Opt_Roz_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Opt_Roz_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Opt_Roz_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "roz" in call.data:
+
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+                           mean="Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+
+                                                    callback_data="callback_m_post_del_Roz_Dir"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+
+                                                    callback_data="callback_m_post_del_Roz_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+
+                                                    callback_data="callback_m_post_del_Roz_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+
+                                                    callback_data="callback_m_post_del_Roz_Zak"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+
+                                                    callback_data="callback_m_post_dalee"))
+
+            bot.send_message(
+
+                text="Выбрано: Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        # elif "roz" in call.data:
+
+        #     # results[10] = "Директор по розничному каналу"
+
+        #     update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+
+        #                    mean="Директор по розничному каналу")
+
+        elif "dalee" in call.data:
+
+            bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите название торговой точки"),
+
+                                           c_direction)
 
     elif call.data == "callback_m_dir_d":
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), m_field)
 
-
     elif "callback_m_dir" in call.data:
         if "opt" in call.data:
-            results[11] = "Оптовая торговля"
+            # results[11] = "Оптовая торговля"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Оптовая торговля")
         elif "rok" in call.data:
-            results[11] = "Корпоративные продажи"
+            # results[11] = "Корпоративные продажи"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Корпоративные продажи")
         elif "int" in call.data:
-            results[11] = "Интернет"
+            # results[11] = "Интернет"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Интернет")
         elif "roz" in call.data:
-            results[11] = "Розница"
-        print(results)
+            # results[11] = "Розница"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Розница")
         keyboard = types.InlineKeyboardMarkup(row_width=3)
         keyboard.add(types.InlineKeyboardButton(text="Канцелярия",
                                                 callback_data="callback_m_field_kan"),
@@ -142,99 +941,147 @@ def callback_query(call):
                      )
         bot.send_message(call.message.chat.id, "Укажите сферу:", reply_markup=keyboard)
 
-
     elif call.data == "callback_m_field_d":
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), m_offline)
 
 
     elif "callback_m_field" in call.data:
         if "kan" in call.data:
-            results[12] = "Канцелярия"
+            # results[12] = "Канцелярия"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Канцелярия")
         elif "det" in call.data:
-            results[12] = "Детские товары"
+            # results[12] = "Детские товары"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Детские товары")
         elif "kni" in call.data:
-            results[12] = "Книги"
+            # results[12] = "Книги"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Книги")
         elif "sum" in call.data:
-            results[12] = "Сумки"
+            # results[12] = "Сумки"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Сумки")
         elif "suv" in call.data:
-            results[12] = "Сувениры"
-        print(results)
+            # results[12] = "Сувениры"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Сувениры")
         keyboard = types.InlineKeyboardMarkup(row_width=3)
-        keyboard.add(types.InlineKeyboardButton(text="Да",
+        keyboard.add(types.InlineKeyboardButton(text="✅Есть",
                                                 callback_data="callback_m_offline_yes"),
-                     types.InlineKeyboardButton(text="Нет",
+                     types.InlineKeyboardButton(text="❌Нет",
                                                 callback_data="callback_m_offline_no"),
                      )
         bot.send_message(call.message.chat.id, "Наличие оффлайн точек:", reply_markup=keyboard)
 
 
     elif call.data == "callback_m_offline_yes":
-        results[13] = "Да"
-        print(results)
+        # results[13] = "Да"
+        update_message(id_=id_search(user_id=call.message.chat.id), field='offline',
+                       mean="Да")
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите количество"), m_assort)
 
 
     elif call.data == "callback_m_offline_no":
-        results[13] = "Нет"
-        print(results)
-        keyboard = types.InlineKeyboardMarkup(row_width=3)
-        keyboard.add(types.InlineKeyboardButton(text="Интересна вся продукция",
-                                                callback_data="callback_m_assort_prod"),
-                     types.InlineKeyboardButton(text="Офис",
+        # results[13] = ""
+        update_message(id_=id_search(user_id=call.message.chat.id), field='offline',
+                       mean="Нет")
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.row(types.InlineKeyboardButton(text="Интересна вся продукция",
+                                                callback_data="callback_m_assort_prod"))
+        keyboard.row(types.InlineKeyboardButton(text="Интересует некоторая продукция",
+                                                callback_data="callback_m_assort_some"))
+        keyboard.row(types.InlineKeyboardButton(text="Офис",
                                                 callback_data="callback_m_assort_ofi"),
                      types.InlineKeyboardButton(text="Пластик",
                                                 callback_data="callback_m_assort_spa"),
-                     types.InlineKeyboardButton(text="Бумажно-беловая",
-                                                callback_data="callback_m_assort_bum"),
-                     types.InlineKeyboardButton(text="Сумки-рюкзаки",
+                     )
+        keyboard.row(types.InlineKeyboardButton(text="Сумки-рюкзаки",
                                                 callback_data="callback_m_assort_sum"),
                      types.InlineKeyboardButton(text="Творчество",
-                                                callback_data="callback_m_assort_two")
-                     )
+                                                callback_data="callback_m_assort_two"))
+        keyboard.row(types.InlineKeyboardButton(text="Бумажно-беловая",
+                                   callback_data="callback_m_assort_bum"))
         bot.send_message(call.message.chat.id, "Укажите интересующий ассортимент.", reply_markup=keyboard)
 
 
     elif "callback_m_assort" in call.data:
-        if "prod" in call.data:
-            results[15] = "Интересна вся продукция"
-        elif "ofi" in call.data:
-            results[15] = "Офис"
-        elif "spa" in call.data:
-            results[15] = "Пластик"
-        elif "bum" in call.data:
-            results[15] = "Бумажно-беловая"
-        elif "sum" in call.data:
-            results[15] = "Сумки-рюкзаки"
-        elif "two" in call.data:
-            results[15] = "Творчество"
-        print(results)
-        keyboard = types.InlineKeyboardMarkup(row_width=3)
-        keyboard.add(types.InlineKeyboardButton(text="Да",
-                                                callback_data="callback_m_comment_yes"),
-                     types.InlineKeyboardButton(text="Нет",
-                                                callback_data="callback_m_comment_no"),
-                     )
-        bot.send_message(call.message.chat.id, "У вас есть комментарии по заполненной анкете?", reply_markup=keyboard)
+        if "some" in call.data:
+            print("qwe")
+            bot.register_next_step_handler(bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующего Вас ассортимента:\n"
+                                                    "1. Офис\n"
+                                                    "2. Пластик\n"
+                                                    "3. Бумажно-беловая прод.\n"
+                                                    "4. Сумки-рюкзаки\n"
+                                                    "5. Творчество\n")), m_some_assort)
+        else:
+
+            if "prod" in call.data:
+                # results[15] = "Интересна вся продукция"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Интересна вся продукция")
+            elif "ofi" in call.data:
+                # results[15] = "Офис"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Офис")
+            elif "spa" in call.data:
+                # results[15] = "Пластик"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Пластик")
+            elif "bum" in call.data:
+                # results[15] = "Бумажно-беловая"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Бумажно-беловая")
+            elif "sum" in call.data:
+                # results[15] = "Сумки-рюкзаки"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Сумки-рюкзаки")
+            elif "two" in call.data:
+                # results[15] = "Творчество"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Творчество")
+            keyboard = types.InlineKeyboardMarkup(row_width=3)
+            keyboard.add(types.InlineKeyboardButton(text="✅Да",
+                                                    callback_data="callback_m_comment_yes"),
+                         types.InlineKeyboardButton(text="❌Нет",
+                                                    callback_data="callback_m_comment_no"),
+                         )
+            bot.send_message(call.message.chat.id, "У вас есть комментарии по заполненной анкете?", reply_markup=keyboard)
 
 
     elif call.data == "callback_m_comment_no":
-        results[16] = "Нет"
-        print(results)
-        add_message(user_id=results[18], data=results)
+        # results[16] = "Нет"
+        update_message(id_=id_search(user_id=call.message.chat.id), field='com',
+                       mean="Нет")
+        # add_message(user_id=results[18], data=results)
         bot.register_next_step_handler(
             bot.send_message(call.message.chat.id, ("Спасибо за заполнение анкеты, все данные сохранены! 🎉\n"
-                                                    f"Универсальный номер анкеты: {random.randint(1,100000)},"
-                                                    " по нему клиент может получить подарок.")), m_pass)
+                                                    f"*Универсальный номер анкеты:{call.message.chat.id}-{iid[0]},*"
+                                                    " *по нему клиент может получить подарок.*"),
+                             parse_mode='Markdown'), m_pass)
+        iid[0] = iid[0] + 1
     elif call.data == "callback_m_comment_yes":
-        results[16] = "Да"
-        print(results)
+        # results[16] = "Да"
+        update_message(id_=id_search(user_id=call.message.chat.id), field='com',
+                       mean="Да")
+        # print(results)
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите Ваш комментарий"), m_finish)
 
 
     ######################################################
+    elif "callback_role_c" == call.data:
+        # results[0] = call.data.strip("callback_date")
+        keyboard = types.InlineKeyboardMarkup(row_width=2)
+        keyboard.add(types.InlineKeyboardButton(text="Верно",
+                                                callback_data="callback_client"),
+                     types.InlineKeyboardButton(text="Назад",
+                                                callback_data="callback_date"))
+        bot.send_message(call.message.chat.id, "Вы выбрали клиент", reply_markup=keyboard)
+
     elif call.data == "callback_client":
-        results[1] = call.data.strip("callback_")
-        print(results)
+        # results[1] = call.data.strip("callback_")
+        update_message(id_=id_search(user_id=call.message.chat.id), field='role',
+                       mean=call.data[-6:])
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Ваше ФИО"), c_coop)
 
 
@@ -244,12 +1091,18 @@ def callback_query(call):
 
     elif "callback_c_coop" in call.data:
         if "yes" in call.data:
-            results[5] = "Да"
+            # results[5] = "Да"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='coop',
+                           mean="Да")
         elif "no" in call.data:
-            results[5] = "Нет"
+            # results[5] = "Нет"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='coop',
+                           mean="Нет")
         elif "worked" in call.data:
-            results[5] = "Работали ранее, но прекратили"
-        print(results)
+            # results[5] = "Работали ранее, но прекратили"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='coop',
+                           mean="Работали ранее, но прекратили")
+
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Город Вашего офиса"), c_region)
 
 
@@ -260,17 +1113,461 @@ def callback_query(call):
     elif "callback_c_post" in call.data:
         print(call.data)
         if "dir" in call.data:
-            results[10] = "Директор"
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Dir_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Dir_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Dir_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Dir_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Директор \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" not in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Собственник")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Директор, Собственник \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Dir_Opt_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Dir_Opt_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Dir_Opt_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Директор, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" not in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Dir_Roz_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Dir_Roz_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Dir_Roz_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Директор, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Dir_Zak_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Dir_Zak_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Dir_Zak_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
+            # results[10] = "Директор"
+            print('qwe')
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Собственник, Директор по оптовому каналу")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Opt_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Opt_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and not "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Собственник, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор, Собственник, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Собственник, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор, Собственник, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Opt_Roz_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id,reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Dir_Sob_Opt_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу\nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
         elif "zak" in call.data:
-            results[10] = "Специалист по закупкам"
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Zak_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Zak_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Zak_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Zak_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Собственник, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор по оптовому каналу, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Zak_Opt_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Zak_Opt_Sob"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Zak_Opt_Roz"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+        elif "Dir" not in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz"  in call.data and "Zak" in call.data:
+            # results[10] = "Директор"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор по розничному каналу, Специалист по закупкам")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Zak_Roz_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Zak_Roz_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Zak_Roz_Opt"))
+
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(text="Выбрано: Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник, Специалист по закупкам, Директор по оптовому каналу")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Opt_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Opt_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Собственник, Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" in call.data:
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник, Специалист по закупкам, Директор по розничному каналу")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Roz_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Roz_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Собственник, Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Zak_Sob_Roz_Dir_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+        # elif "zak" in call.data:
+        #     update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+        #                    mean="Специалист по закупкам")
+        #     keyboard = types.InlineKeyboardMarkup()
+        #     keyboard.row(types.InlineKeyboardButton(text="Директор",
+        #                                             callback_data="callback_c_post_delZak_Dir"))
+        #     keyboard.row(types.InlineKeyboardButton(text="Собственник",
+        #                                             callback_data="callback_c_post_delZak_Sob"))
+        #     keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+        #                                             callback_data="callback_c_post_delZak_Opt"))
+        #     keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+        #                                             callback_data="callback_c_post_delZak_Roz"))
+        #
+        #     keyboard.row(types.InlineKeyboardButton(text="Далее",
+        #                                             callback_data="callback_c_post_dalee"))
+        #     bot.edit_message_text(text="Выбрано: Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+        #                           chat_id=call.message.chat.id, message_id=call.message.message_id,
+        #                           reply_markup=keyboard)
         elif "sob" in call.data:
-            results[10] = "Собственник"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Sob_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Sob_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Sob_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Sob_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Собственник \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник, Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Sob_Opt_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Sob_Opt_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Sob_Opt_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Собственник, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" not in call.data:
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Sob_Roz_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Sob_Roz_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Sob_Roz_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Собственник, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Собственник, Директор по оптовому каналу, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Sob_Opt_Roz_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Sob_Opt_Roz_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+
         elif "opt" in call.data:
-            results[10] = "Директор по оптовому каналу"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор по оптовому каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Opt_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Opt_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                    callback_data="callback_c_post_del_Opt_Roz"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Opt_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор по оптовому каналу, Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Opt_Roz_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Opt_Roz_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Opt_Roz_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+
+
+
+        # elif "sob" in call.data:
+        #     # results[10] = "Собственник"
+        #     update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+        #                    mean="Собственник")
+        # elif "opt" in call.data:
+        #     # results[10] = "Директор по оптовому каналу"
+        #     update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+        #                    mean="Директор по оптовому каналу")
         elif "roz" in call.data:
-            results[10] = "Директор по розничному каналу"
-        print(results)
-        bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите название торговой точки"),
+            update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+                           mean="Директор по розничному каналу")
+
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.row(types.InlineKeyboardButton(text="Директор",
+                                                    callback_data="callback_c_post_del_Roz_Dir"))
+            keyboard.row(types.InlineKeyboardButton(text="Собственник",
+                                                    callback_data="callback_c_post_del_Roz_Sob"))
+            keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                    callback_data="callback_c_post_del_Roz_Opt"))
+            keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                    callback_data="callback_c_post_del_Roz_Zak"))
+            keyboard.row(types.InlineKeyboardButton(text="Далее",
+                                                    callback_data="callback_c_post_dalee"))
+            bot.send_message(
+                text="Выбрано: Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                chat_id=call.message.chat.id, reply_markup=keyboard)
+
+        # elif "roz" in call.data:
+        #     # results[10] = "Директор по розничному каналу"
+        #     update_message(id_=id_search(user_id=call.message.chat.id), field='post',
+        #                    mean="Директор по розничному каналу")
+        elif "dalee" in call.data:
+            bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите название торговой точки"),
                                        c_direction)
 
     elif call.data == "callback_c_dir_d":
@@ -280,14 +1577,22 @@ def callback_query(call):
     elif "callback_c_dir" in call.data:
         print(call.data)
         if "opt" in call.data:
-            results[11] = "Оптовая торговля"
+            # results[11] = "Оптовая торговля"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Оптовая торговля")
         elif "rok" in call.data:
-            results[11] = "Корпоративные продажи"
+            # results[11] = "Корпоративные продажи"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Корпоративные продажи")
         elif "int" in call.data:
-            results[11] = "Интернет"
+            # results[11] = "Интернет"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Интернет")
         elif "roz" in call.data:
-            results[11] = "Розница"
-        print(results)
+            # results[11] = "Розница"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
+                           mean="Розница")
+
         keyboard = types.InlineKeyboardMarkup(row_width=3)
         keyboard.add(types.InlineKeyboardButton(text="Канцелярия",
                                                 callback_data="callback_c_field_kan"),
@@ -304,92 +1609,125 @@ def callback_query(call):
                      )
         bot.send_message(call.message.chat.id, "Укажите сферу:", reply_markup=keyboard)
 
-
     elif call.data == "callback_c_field_d":
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), c_offline)
 
-
     elif "callback_c_field" in call.data:
         if "kan" in call.data:
-            results[12] = "Канцелярия"
+            # results[12] = "Канцелярия"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Канцелярия")
         elif "det" in call.data:
-            results[12] = "Детские товары"
+            # results[12] = "Детские товары"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Детские товары")
         elif "kni" in call.data:
-            results[12] = "Книги"
+            # results[12] = "Книги"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Книги")
         elif "sum" in call.data:
-            results[12] = "Сумки"
+            # results[12] = "Сумки"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Сумки")
         elif "suv" in call.data:
-            results[12] = "Сувениры"
-        print(results)
+            # results[12] = "Сувениры"
+            update_message(id_=id_search(user_id=call.message.chat.id), field='field',
+                           mean="Сувениры")
         keyboard = types.InlineKeyboardMarkup(row_width=3)
-        keyboard.add(types.InlineKeyboardButton(text="Да",
+        keyboard.add(types.InlineKeyboardButton(text="✅Есть",
                                                 callback_data="callback_c_offline_yes"),
-                     types.InlineKeyboardButton(text="Нет",
+                     types.InlineKeyboardButton(text="❌Нет",
                                                 callback_data="callback_c_offline_no"),
                      )
         bot.send_message(call.message.chat.id, "Наличие оффлайн точек:", reply_markup=keyboard)
 
 
     elif call.data == "callback_c_offline_yes":
-        results[13] = "Да"
-        print(results)
+        # results[13] = "Да"
+        update_message(id_=id_search(user_id=call.message.chat.id), field='offline',
+                       mean="Да")
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите количество"), c_assort)
 
 
     elif call.data == "callback_c_offline_no":
-        results[13] = "Нет"
-        print(results)
-        keyboard = types.InlineKeyboardMarkup(row_width=3)
-        keyboard.add(types.InlineKeyboardButton(text="Интересна вся продукция",
-                                                callback_data="callback_c_assort_prod"),
-                     types.InlineKeyboardButton(text="Офис",
+        # results[13] = "Нет"
+        update_message(id_=id_search(user_id=call.message.chat.id), field='offline',
+                       mean="Нет")
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.row(types.InlineKeyboardButton(text="Интересна вся продукция",
+                                                callback_data="callback_c_assort_prod"))
+        keyboard.row(types.InlineKeyboardButton(text="Интересна некоторая продукция",
+                                                callback_data="callback_c_assort_some"))
+        keyboard.row(types.InlineKeyboardButton(text="Офис",
                                                 callback_data="callback_c_assort_ofi"),
                      types.InlineKeyboardButton(text="Пластик",
                                                 callback_data="callback_c_assort_spa"),
                      types.InlineKeyboardButton(text="Бумажно-беловая",
-                                                callback_data="callback_c_assort_bum"),
-                     types.InlineKeyboardButton(text="Сумки-рюкзаки",
+                                                callback_data="callback_c_assort_bum"))
+        keyboard.row(types.InlineKeyboardButton(text="Сумки-рюкзаки",
                                                 callback_data="callback_c_assort_sum"),
                      types.InlineKeyboardButton(text="Творчество",
-                                                callback_data="callback_c_assort_two")
-                     )
+                                                callback_data="callback_c_assort_two"))
         bot.send_message(call.message.chat.id, "Укажите интересующий ассортимент.", reply_markup=keyboard)
 
 
     elif "callback_c_assort" in call.data:
-        if "prod" in call.data:
-            results[15] = "Интересна вся продукция"
-        elif "ofi" in call.data:
-            results[15] = "Офис"
-        elif "spa" in call.data:
-            results[15] = "Пластик"
-        elif "bum" in call.data:
-            results[15] = "Бумажно-беловая"
-        elif "sum" in call.data:
-            results[15] = "Сумки-рюкзаки"
-        elif "two" in call.data:
-            results[15] = "Творчество"
-        print(results)
-        keyboard = types.InlineKeyboardMarkup(row_width=3)
-        keyboard.add(types.InlineKeyboardButton(text="Да",
-                                                callback_data="callback_c_comment_yes"),
-                     types.InlineKeyboardButton(text="Нет",
-                                                callback_data="callback_c_comment_no"),
-                     )
-        bot.send_message(call.message.chat.id, "У вас есть комментарии по заполненной анкете?", reply_markup=keyboard)
+        if "some" in call.data:
+            bot.register_next_step_handler(bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующего Вас ассортимента:\n"
+                                                    "1. Офис\n"
+                                                    "2. Пластик\n"
+                                                    "3. Бумажно-беловая прод.\n"
+                                                    "4. Сумки-рюкзаки\n"
+                                                    "5. Творчество\n")), c_some_assort)
+        else:
+            if "prod" in call.data:
+                # results[15] = "Интересна вся продукция"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Интересна вся продукция")
+            elif "ofi" in call.data:
+                # results[15] = "Офис"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Офис")
+            elif "spa" in call.data:
+                # results[15] = "Пластик"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Пластик")
+            elif "bum" in call.data:
+                # results[15] = "Бумажно-беловая"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Бумажно-беловая")
+            elif "sum" in call.data:
+                # results[15] = "Сумки-рюкзаки"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Сумки-рюкзаки")
+            elif "two" in call.data:
+                # results[15] = "Творчество"
+                update_message(id_=id_search(user_id=call.message.chat.id), field='interest',
+                               mean="Творчество")
+            keyboard = types.InlineKeyboardMarkup(row_width=3)
+            keyboard.add(types.InlineKeyboardButton(text="✅Да",
+                                                    callback_data="callback_c_comment_yes"),
+                         types.InlineKeyboardButton(text="❌Нет",
+                                                    callback_data="callback_c_comment_no"),
+                         )
+            bot.send_message(call.message.chat.id, "У вас есть комментарии по заполненной анкете?", reply_markup=keyboard)
 
 
     elif call.data == "callback_c_comment_no":
-        results[16] = "Нет"
-        print(results)
-        add_message(user_id=results[18], data=results)
+        # results[16] = "Нет"
+        update_message(id_=id_search(user_id=call.message.chat.id), field='com',
+                       mean="Нет")
         bot.register_next_step_handler(
             bot.send_message(call.message.chat.id, ("Спасибо за заполнение анкеты, все данные сохранены! 🎉\n"
-                                                    f"Универсальный номер анкеты: {random.randint(1,100000)},"
-                                                    " по нему клиент может получить подарок.")), c_pass)
+                                                    f"*Ваш универсальный номер: { call.message.chat.id}-{iid[0]}. Покажите его сотруднику на *"
+                                                    "*стойке регистрации на стенде ErichKrause и получите подарок. *"
+                                                    "🎁"), parse_mode='Markdown'), c_pass)
+        iid[0] = iid[0] + 1
+
     elif call.data == "callback_c_comment_yes":
-        results[16] = "Да"
-        print(results)
+        # results[16] = "Да"
+        update_message(id_=id_search(user_id=call.message.chat.id), field='com',
+                       mean="Да")
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Укажите Ваш комментарий"), c_finish)
 
         #############################
@@ -397,112 +1735,158 @@ def callback_query(call):
 
 @bot.message_handler(content_types='text')
 def m_m_fio(message):
-    results[2] = message.text
-
+    # results[2] = message.text
+    print("ready1")
+    update_message(id_=id_search(user_id=message.chat.id), field='division',
+                   mean=message.text)
+    print("ready2")
     bot.register_next_step_handler(bot.send_message(message.chat.id, "Ваше ФИО"), m_fio)
-    print(results)
 
 
 @bot.message_handler(content_types='text')
 def m_fio(message):
-    results[3] = message.text
-
+    # results[3] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='manager_fio',
+                   mean=message.text)
     bot.register_next_step_handler(bot.send_message(message.chat.id, "ФИО клиента"), m_coop)
-    print(results)
 
 
 def m_coop(message):
-    results[4] = message.text
-    print(results)
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(types.InlineKeyboardButton(text="Да",
+    # results[4] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='client_fio',
+                   mean=message.text)
+    # keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(types.InlineKeyboardButton(text="✅Да",
                                             callback_data="callback_m_coop_yes"),
-                 types.InlineKeyboardButton(text="Нет",
+                 types.InlineKeyboardButton(text="❌Нет",
                                             callback_data="callback_m_coop_no"),
-                 types.InlineKeyboardButton(text="Работали ранее, но прекратили",
-                                            callback_data="callback_m_coop_worked"),
                  types.InlineKeyboardButton(text="Другое",
                                             callback_data="callback_m_coop_d")
                  )
+    keyboard.row(types.InlineKeyboardButton(text="🔄Работали ранее, но прекратили",
+                                            callback_data="callback_m_coop_worked"))
     bot.send_message(message.chat.id, "Ранее было сотрудничество с «Офис Премьер»?", reply_markup=keyboard)
-
 
 
 @bot.message_handler(content_types='text')
 def m_city(message):
-    results[5] = message.text
-    bot.register_next_step_handler(bot.send_message(message.chat.id, "Город офиса клиента. Если несколько – введите через пробела"), m_region)
-    print(results)
-
+    # results[5] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='coop',
+                   mean=message.text)
+    bot.register_next_step_handler(
+        bot.send_message(message.chat.id, "Город офиса клиента. Если несколько – введите через пробела"), m_region)
 
 
 @bot.message_handler(content_types='text')
 def m_region(message):
-    results[6] = message.text
+    # results[6] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='city',
+                   mean=message.text)
     bot.register_next_step_handler(bot.send_message(message.chat.id, "Регионы продаж клиента"), m_phone)
-    print(results)
-
 
 
 @bot.message_handler(content_types='text')
 def m_phone(message):
-    results[7] = message.text
+    # results[7] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='region',
+                   mean=message.text)
     bot.register_next_step_handler(
         bot.send_message(message.chat.id, "Введите номер телефона клиента в международном формате (начинается с +)"),
-        m_email)
-    print(results)
+        m_phone_sure)
 
+
+
+def m_phone_sure(message):
+    if re.findall(r'\+\d{10,13}$', message.text):
+        update_message(id_=id_search(user_id=message.chat.id), field='phone',
+                       mean=message.text)
+        bot.register_next_step_handler(
+            bot.send_message(message.chat.id,
+                             "Вы ввели верный номер телефона? Введите *Да* или *Нет*", parse_mode='Markdown'),
+            m_email)
+        print(message.text)
+
+    else:
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "❗️Кажется, Вы ошиблись. Номер телефона "
+                                                                         "должен начинаться с + и включать в себя "
+                                                                         "только цифры. Перепроверьте правильность "
+                                                                         "данных"), m_phone_sure)
 
 
 @bot.message_handler(content_types='text')
 def m_email(message):
-    if re.findall(r'\+\d{10,13}$', message.text):
-        results[8] = message.text
-        bot.register_next_step_handler(bot.send_message(message.chat.id, "Введите e-mail клиента"), m_post)
-        print(results)
+    print(message.text)
+    if message.text.lower() == "да":
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "Введите e-mail клиента"), m_email_sure)
+    elif message.text.lower() == "нет":
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "Введите номер телефона клиента в "
+                                                                         "международном формате (начинается с "
+                                                                         "+)"), m_phone_sure)
+    else:
+        bot.register_next_step_handler(
+            bot.send_message(message.chat.id, "Вы ввели верный номер телефона? Введите *Да* или *Нет*",
+                             parse_mode='Markdown'), m_email)
+
+def m_email_sure(message):
+    if re.findall(r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?", message.text):
+        update_message(id_=id_search(user_id=message.chat.id), field='email',
+                       mean=message.text)
+        bot.register_next_step_handler(
+            bot.send_message(message.chat.id, "Вы ввели верный email? Введите *Да* или *Нет*",
+                             parse_mode='Markdown'), m_post)
 
     else:
         bot.register_next_step_handler(bot.send_message(message.chat.id,
-                                                        "Кажется, Вы ошиблись. Номер телефона должен начинаться с + и включать в себя только цифры.\n"
-                                                        "Перепроверьте правильность данных и введите номер снова, начиная с +."), m_email)
+                                                        "❗❗️Перепроверьте правильность данных и введите e-mail снова. Почта должна содержать символы «@» и «.»"),
+                                       m_email_sure)
+
+# @bot.callback_query_handler(func=lambda call: "callback_m_post" in call.data)
+# def m_post_mass(call):
+#     if "dir" in call.data:
+
+
 
 
 
 def m_post(message):
-    if re.findall(r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?", message.text):
-        results[9] = message.text
-        print(results)
-        keyboard = types.InlineKeyboardMarkup(row_width=2)
-        keyboard.add(types.InlineKeyboardButton(text="Директор",
+    if message.text.lower() == "да":
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.row(types.InlineKeyboardButton(text="Директор",
                                                 callback_data="callback_m_post_dir"),
-                     types.InlineKeyboardButton(text="Специалист по закупкам",
-                                                callback_data="callback_m_post_zak"),
                      types.InlineKeyboardButton(text="Собственник",
-                                                callback_data="callback_m_post_sob"),
-                     types.InlineKeyboardButton(text="Директор по оптовому каналу",
-                                                callback_data="callback_m_post_opt"),
-                     types.InlineKeyboardButton(text="Директор по розничному каналу",
-                                                callback_data="callback_m_post_roz"),
+                                                callback_data="callback_m_post_sob"))
+        keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                callback_data="callback_m_post_opt"))
+        keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                callback_data="callback_m_post_roz"))
+        keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                callback_data="callback_m_post_zak"),
                      types.InlineKeyboardButton(text="Другое",
-                                                callback_data="callback_m_post_d")
-                     )
+                                                callback_data="callback_m_post_d"))
         bot.send_message(message.chat.id, "Должность клиента. Если несколько, то дополните позже.",
                          reply_markup=keyboard)
 
+    elif message.text.lower() == "нет":
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "Введите Ваш e-mail"), m_email_sure)
     else:
-        bot.register_next_step_handler(bot.send_message(message.chat.id, "Перепроверьте правильность данных и введите e-mail снова"), m_post)
+        bot.register_next_step_handler(
+            bot.send_message(message.chat.id, "Вы ввели верный email? Введите *Да* или *Нет*",
+                             parse_mode='Markdown'), m_post)
 
 
 @bot.message_handler(content_types='text')
 def m_point(message):
-    results[10] = message.text
-    print(results)
+    # results[10] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='post',
+                   mean=message.text)
     bot.register_next_step_handler(bot.send_message(message.chat.id, "Укажите название торговой точки"), m_direction)
 
 
 def m_direction(message):
-    results[11] = message.text
-    print(results)
+    # results[11] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='direction',
+                   mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Оптовая торговля",
                                             callback_data="callback_m_dir_opt"),
@@ -519,10 +1903,10 @@ def m_direction(message):
                      reply_markup=keyboard)
 
 
-
 def m_field(message):
-    results[11] = message.text
-    print(results)
+    # results[11] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='field',
+                   mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(types.InlineKeyboardButton(text="Канцелярия",
                                             callback_data="callback_m_field_kan"),
@@ -540,48 +1924,62 @@ def m_field(message):
     bot.send_message(message.chat.id, "Укажите сферу деятельности:", reply_markup=keyboard)
 
 
-
 def m_offline(message):
-    results[12] = message.text
-    print(results)
+    # results[12] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='offline',
+                   mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
-    keyboard.add(types.InlineKeyboardButton(text="Да",
+    keyboard.add(types.InlineKeyboardButton(text="✅Есть",
                                             callback_data="callback_m_offline_yes"),
-                 types.InlineKeyboardButton(text="Нет",
+                 types.InlineKeyboardButton(text="❌Нет",
                                             callback_data="callback_m_offline_no"),
                  )
     bot.send_message(message.chat.id, "Наличие оффлайн точек:", reply_markup=keyboard)
 
+def m_some_assort(message):
+    update_message(id_=id_search(user_id=message.chat.id), field='interest',
+                   mean=message.text)
+    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard.add(types.InlineKeyboardButton(text="✅Да",
+                                            callback_data="callback_m_comment_yes"),
+                 types.InlineKeyboardButton(text="❌Нет",
+                                            callback_data="callback_m_comment_no"),
+                 )
+    bot.send_message(message.chat.id, "У вас есть комментарии по заполненной анкете?", reply_markup=keyboard)
 
 
 def m_assort(message):
-    results[14] = message.text
-    print(results)
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
-    keyboard.add(types.InlineKeyboardButton(text="Интересна вся продукция",
-                                            callback_data="callback_m_assort_prod"),
-                 types.InlineKeyboardButton(text="Офис",
+    # results[14] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='count',
+                   mean=message.text)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(types.InlineKeyboardButton(text="Интересна вся продукция",
+                                            callback_data="callback_m_assort_prod"))
+    keyboard.row(types.InlineKeyboardButton(text="Интересна некоторая продукция",
+                                            callback_data="callback_m_assort_some"))
+    keyboard.row(types.InlineKeyboardButton(text="Офис",
                                             callback_data="callback_m_assort_ofi"),
                  types.InlineKeyboardButton(text="Пластик",
                                             callback_data="callback_m_assort_spa"),
                  types.InlineKeyboardButton(text="Бумажно-беловая",
-                                            callback_data="callback_m_assort_bum"),
-                 types.InlineKeyboardButton(text="Сумки-рюкзаки",
+                                            callback_data="callback_m_assort_bum"))
+    keyboard.row(types.InlineKeyboardButton(text="Сумки-рюкзаки",
                                             callback_data="callback_m_assort_sum"),
                  types.InlineKeyboardButton(text="Творчество",
-                                            callback_data="callback_m_assort_two")
-                 )
+                                            callback_data="callback_m_assort_two"))
     bot.send_message(message.chat.id, "Укажите интересующий ассортимент.", reply_markup=keyboard)
 
 
-
 def m_finish(message):
-    results[17] = message.text
-    print(results)
-    add_message(user_id=results[18], data=results)
-    bot.send_message(message.chat.id, ("Спасибо за заполнение анкеты, все данные сохранены! 🎉\nУниверсальный номер "
-                                       f"анкеты: {random.randint(1,100000)}, по нему клиент может получить "
-                                       "подарок."))
+    # results[17] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='comment',
+                   mean=message.text)
+    # add_message(user_id=results[18], data=results)
+    bot.send_message(message.chat.id, ("Спасибо за заполнение анкеты, все данные сохранены! 🎉\n"
+                                       f"*Универсальный номер анкеты: {message.chat.id}-{iid[0]},*"
+                                       " *по нему клиент может получить подарок.*"), parse_mode='Markdown')
+    iid[0] = iid[0] + 1
+
     m_pass()
 
 
@@ -591,96 +1989,137 @@ def m_pass():
 
 ###############
 def c_coop(message):
-    results[4] = message.text
-    print(results)
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(types.InlineKeyboardButton(text="Да",
+    # results[4] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='client_fio',
+                   mean=message.text)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(types.InlineKeyboardButton(text="✅Да",
                                             callback_data="callback_c_coop_yes"),
-                 types.InlineKeyboardButton(text="Нет",
+                 types.InlineKeyboardButton(text="❌Нет",
                                             callback_data="callback_c_coop_no"),
-                 types.InlineKeyboardButton(text="Работали ранее, но прекратили",
-                                            callback_data="callback_c_coop_worked"),
                  types.InlineKeyboardButton(text="Другое",
-                                            callback_data="callback_c_coop_d")
-                 )
-    bot.send_message(message.chat.id, "Ранее было сотрудничество с «Офис Премьер»?", reply_markup=keyboard)
+                                            callback_data="callback_c_coop_d"
+                                            ))
+    keyboard.row(types.InlineKeyboardButton(text="🔄Работали ранее, но прекратили",
+                                            callback_data="callback_c_coop_worked"))
 
+    bot.send_message(message.chat.id, "Ранее было сотрудничество с «Офис Премьер»?", reply_markup=keyboard)
 
 
 @bot.message_handler(content_types='text')
 def c_city(message):
-    results[5] = message.text
+    # results[5] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='coop',
+                   mean=message.text)
     bot.register_next_step_handler(bot.send_message(message.chat.id, "Город Вашего офиса"), c_region)
-    print(results)
-
 
 
 @bot.message_handler(content_types='text')
 def c_region(message):
-    results[6] = message.text
+    # results[6] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='city',
+                   mean=message.text)
     bot.register_next_step_handler(bot.send_message(message.chat.id, "Регионы ваших продаж"), c_phone)
-    print(results)
-
 
 
 @bot.message_handler(content_types='text')
 def c_phone(message):
-    results[7] = message.text
+    # results[7] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='region',
+                   mean=message.text)
     bot.register_next_step_handler(
         bot.send_message(message.chat.id, "Ваш номер телефона в международном формате (начинается с +)"), c_email)
-    print(results)
 
+
+def c_phone_sure(message):
+    if re.findall(r'\+\d{10,13}$', message.text):
+        update_message(id_=id_search(user_id=message.chat.id), field='phone',
+                       mean=message.text)
+        bot.register_next_step_handler(
+            bot.send_message(message.chat.id, "Вы ввели верный номер телефона? Введите *Да* или *Нет*",
+                             parse_mode='Markdown'), c_email)
+        print(message.text)
+
+    else:
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "❗️Кажется, Вы ошиблись. Номер телефона "
+                                                                         "должен начинаться с + и включать в себя "
+                                                                         "только цифры. Перепроверьте правильность "
+                                                                         "данных"), c_phone_sure)
 
 
 @bot.message_handler(content_types='text')
 def c_email(message):
-    if re.findall(r'\+\d{10,13}$', message.text):
-        results[8] = message.text
-        bot.register_next_step_handler(bot.send_message(message.chat.id, "Ваш e-mail"), c_post)
-        print(results)
+    print(message.text)
+    if message.text.lower() == "да":
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "Введите ваш e-mail"), c_email_sure)
+    elif message.text.lower() == "нет":
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "Введите ваш номер телефона в "
+                                                                         "международном формате (начинается с "
+                                                                         "+)"), c_phone_sure)
     else:
         bot.register_next_step_handler(
-            bot.send_message(message.chat.id, "Кажется, Вы ошиблись. Номер телефона должен начинаться с + и включать в себя только цифры.\n"
-                                              "Перепроверьте правильность данных и введите номер снова, начиная с +."), c_email)
+            bot.send_message(message.chat.id, "Вы ввели верный номер телефона? Введите *Да* или *Нет*",
+                             parse_mode='Markdown'), c_email)
 
+def c_email_sure(message):
+    if re.findall(r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?", message.text):
+        update_message(id_=id_search(user_id=message.chat.id), field='email',
+                       mean=message.text)
+        bot.register_next_step_handler(
+            bot.send_message(message.chat.id, "Вы ввели верный email? Введите *Да* или *Нет*",
+                             parse_mode='Markdown'), c_post)
+
+    else:
+        bot.register_next_step_handler(
+            bot.send_message(message.chat.id,
+                             "❗❗️Перепроверьте правильность данных и введите e-mail снова. Почта должна содержать символы «@» и «.»"),
+            c_email_sure)
 
 
 def c_post(message):
-    if re.findall(r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?", message.text):
-        results[9] = message.text
-        print(results)
-        keyboard = types.InlineKeyboardMarkup(row_width=2)
-        keyboard.add(types.InlineKeyboardButton(text="Директор",
+    if message.text.lower() == "да":
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.row(types.InlineKeyboardButton(text="Директор",
                                                 callback_data="callback_c_post_dir"),
-                     types.InlineKeyboardButton(text="Специалист по закупкам",
-                                                callback_data="callback_c_post_zak"),
                      types.InlineKeyboardButton(text="Собственник",
-                                                callback_data="callback_c_post_sob"),
-                     types.InlineKeyboardButton(text="Директор по оптовому каналу",
-                                                callback_data="callback_c_post_opt"),
-                     types.InlineKeyboardButton(text="Директор по розничному каналу",
-                                                callback_data="callback_c_post_roz"),
-                     types.InlineKeyboardButton(text="Другое",
-                                                callback_data="callback_c_post_d")
+                                                callback_data="callback_c_post_sob")
                      )
+        keyboard.row(types.InlineKeyboardButton(text="Директор по оптовому каналу",
+                                                callback_data="callback_c_post_opt"))
+        keyboard.row(types.InlineKeyboardButton(text="Директор по розничному каналу",
+                                                callback_data="callback_c_post_roz"))
+        keyboard.row(types.InlineKeyboardButton(text="Специалист по закупкам",
+                                                callback_data="callback_c_post_zak"),
+                     types.InlineKeyboardButton(text="Другое",
+                                                callback_data="callback_c_post_d"))
         bot.send_message(message.chat.id, "Ваша должность. Если несколько, то дополните позже.",
                          reply_markup=keyboard)
 
+
+    elif message.text.lower() == "нет":
+        bot.register_next_step_handler(bot.send_message(message.chat.id, "Введите Ваш e-mail"), c_email_sure)
     else:
-        bot.register_next_step_handler(bot.send_message(message.chat.id, "Перепроверьте правильность данных и введите e-mail снова"), c_post)
+        bot.register_next_step_handler(
+            bot.send_message(
+                message.chat.id, "Вы ввели верный email? Введите *Да* или *Нет*",
+                parse_mode='Markdown'), c_post)
+
 
 
 
 @bot.message_handler(content_types='text')
 def c_point(message):
-    results[10] = message.text
-    print(results)
+    # results[10] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='post',
+                   mean=message.text)
     bot.register_next_step_handler(bot.send_message(message.chat.id, "Укажите название торговой точки"), c_direction)
 
 
 def c_direction(message):
-    results[11] = message.text
-    print(results)
+    # results[11] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='direction',
+                   mean=message.text)
+
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Оптовая торговля",
                                             callback_data="callback_c_dir_opt"),
@@ -698,8 +2137,9 @@ def c_direction(message):
 
 
 def c_field(message):
-    results[11] = message.text
-    print(results)
+    # results[11] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='field',
+                   mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(types.InlineKeyboardButton(text="Канцелярия",
                                             callback_data="callback_c_field_kan"),
@@ -718,83 +2158,75 @@ def c_field(message):
 
 
 def c_offline(message):
-    results[12] = message.text
-    print(results)
+    # results[12] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='offline',
+                   mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
-    keyboard.add(types.InlineKeyboardButton(text="Да",
+    keyboard.add(types.InlineKeyboardButton(text="✅Есть",
                                             callback_data="callback_c_offline_yes"),
-                 types.InlineKeyboardButton(text="Нет",
+                 types.InlineKeyboardButton(text="❌Нет",
                                             callback_data="callback_c_offline_no"),
                  )
     bot.send_message(message.chat.id, "Наличие оффлайн точек:", reply_markup=keyboard)
 
-
+def c_some_assort(message):
+    update_message(id_=id_search(user_id=message.chat.id), field='interest',
+                   mean=message.text)
+    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard.add(types.InlineKeyboardButton(text="✅Да",
+                                            callback_data="callback_c_comment_yes"),
+                 types.InlineKeyboardButton(text="❌Нет",
+                                            callback_data="callback_c_comment_no"),
+                 )
+    bot.send_message(message.chat.id, "У вас есть комментарии по заполненной анкете?", reply_markup=keyboard)
 
 def c_assort(message):
-    results[14] = message.text
-    print(results)
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
-    keyboard.add(types.InlineKeyboardButton(text="Интересна вся продукция",
-                                            callback_data="callback_c_assort_prod"),
-                 types.InlineKeyboardButton(text="Офис",
+    # results[14] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='count',
+                   mean=message.text)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(types.InlineKeyboardButton(text="Интересна вся продукция",
+                                            callback_data="callback_c_assort_prod"))
+    keyboard.row(types.InlineKeyboardButton(text="Интересна некоторая продукция",
+                                            callback_data="callback_c_assort_some"))
+    keyboard.row(types.InlineKeyboardButton(text="Офис",
                                             callback_data="callback_c_assort_ofi"),
                  types.InlineKeyboardButton(text="Пластик",
                                             callback_data="callback_c_assort_spa"),
                  types.InlineKeyboardButton(text="Бумажно-беловая",
-                                            callback_data="callback_c_assort_bum"),
-                 types.InlineKeyboardButton(text="Сумки-рюкзаки",
+                                            callback_data="callback_c_assort_bum"))
+    keyboard.row(types.InlineKeyboardButton(text="Сумки-рюкзаки",
                                             callback_data="callback_c_assort_sum"),
                  types.InlineKeyboardButton(text="Творчество",
-                                            callback_data="callback_c_assort_two")
-                 )
+                                            callback_data="callback_c_assort_two"))
     bot.send_message(message.chat.id, "Укажите интересующий ассортимент.", reply_markup=keyboard)
 
 
-
 def c_finish(message):
-    results[17] = message.text
-    print(results)
-    add_message(user_id=results[18], data=results)
+    # results[17] = message.text
+    update_message(id_=id_search(user_id=message.chat.id), field='comment',
+                   mean=message.text)
     bot.send_message(message.chat.id, ("Спасибо за заполнение анкеты, все данные сохранены! 🎉\n"
-                                       f"Ваш универсальный номер: {random.randint(1,100000)}.\n"
-                                       "Покажите это сообщение нашему сотруднику для того, чтобы получить подарок."))
+                                       f" *Ваш универсальный номер: {message.chat.id}-{iid[0]}. Покажите его сотруднику на "
+                                       "стойке регистрации на стенде ErichKrause и получите подарок. "
+                                       "🎁"), parse_mode='Markdown')
+    iid[0] = iid[0] + 1
     c_pass()
 
 
 def c_pass():
-    add_message(user_id=results[18], data=results)
     add_excel()
 
 
 ###############
 
-@bot.message_handler(commands=['button'])
-def button_message(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Кнопка")
-    item2 = types.KeyboardButton("Тык")
-    markup.add(item1, item2)
-    bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
-
-
-@bot.message_handler(content_types='text')
-def message_reply(message):
-    if message.text == "Кнопка":
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item1 = types.KeyboardButton("Кнопка 2")
-        markup.add(item1)
-        bot.send_message(message.chat.id, 'Выберите что вам надо', reply_markup=markup)
-    elif message.text == "Кнопка 2":
-        bot.send_message(message.chat.id, 'Спасибо за прочтение статьи!')
-
-
-def delete(call):
-    bot.delete_message(call.message.chat.id, call.message.message_id, 1)
-
-
-def delete_mess(message):
-    bot.delete_message(message.chat.id, message.message_id, 1)
-    bot.delete_message(message.chat.id, message.message_id - 1, 1)
+# def delete(call):
+#     bot.delete_message(call.message.chat.id, call.message.message_id, 1)
+#
+#
+# def delete_mess(message):
+#     bot.delete_message(message.chat.id, message.message_id, 1)
+#     bot.delete_message(message.chat.id, message.message_id - 1, 1)
 
 
 bot.infinity_polling()
