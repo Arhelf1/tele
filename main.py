@@ -16,7 +16,7 @@ def start_message(message):
     keyboard = types.InlineKeyboardMarkup(row_width=4)
     keyboard.add(types.InlineKeyboardButton(text="Начать",
                                             callback_data="callback_start_anketa"))
-    bot.send_message(message.chat.id, HELLO, reply_markup=keyboard)
+    bot.send_message(message.chat.id, HELLO, reply_markup=keyboard,parse_mode='Markdown')
     init_db()
 
 
