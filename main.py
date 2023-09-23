@@ -19,8 +19,8 @@ def start_message(message):
                                             callback_data="callback_start_anketa"))
     bot.send_message(message.chat.id, HELLO, reply_markup=keyboard,parse_mode='Markdown')
     init_db()
-    # get_exel()
-    print(message.chat.id)
+    get_exel()
+    # print(message.chat.id)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -2225,7 +2225,7 @@ def get_db_data():
 
 def get_exel():
     f=open("output.xlsx","rb")
-    bot.send_document(chat_id="363674843", document=f)
+    bot.send_document(chat_id="572827912", document=f)
 
 
 ###############
