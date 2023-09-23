@@ -101,6 +101,27 @@ def add_excel():
             worksheet.write(i,j,row[j])
     workbook.close()
 
+@ensure_connection
+def get_db(conn,id_):
+    c = conn.cursor()
+    c.execute(f'SELECT * FROM user_messages where id = {id_}')
+    user = c.fetchall()
+    if user is None:
+        c.close()
+        return None
+    else:
+        c.close()
+        print(user)
+    return user
+
+
+@ensure_connection
+def get_max_id(conn):
+    c=conn.cursor()
+    c.execute(f'select max(id) from user_messages')
+    (res,) = c.fetchone()
+    return res
+
 
 if __name__ == '__main__':
     # rgx_phone = re.compile(r'^(?:\+?44)?[078]\d{9,13}$')

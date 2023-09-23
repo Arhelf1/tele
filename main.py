@@ -1,12 +1,13 @@
 import telebot
 from telebot import types
 from text import HELLO
-from db import init_db, add_message, add_excel, update_message, id_search
+from db import init_db, add_message, add_excel, update_message, id_search, get_db, get_max_id
 import random
 import re
 
-token = "6380116131:AAEcboCnRR8Inldj914AKc2oBRRG429jZZY"
+# token = "6380116131:AAEcboCnRR8Inldj914AKc2oBRRG429jZZY"
 # token = "6477369209:AAELdd8Lt8cj8m0bbMHewGLgDF9CpSVlYqs"
+token = "6283254956:AAH3Nxld442j6t9WEj6x7cFghcxNavhbFKQ"
 bot = telebot.TeleBot(token)
 iid = {0: 1}
 
@@ -18,6 +19,8 @@ def start_message(message):
                                             callback_data="callback_start_anketa"))
     bot.send_message(message.chat.id, HELLO, reply_markup=keyboard,parse_mode='Markdown')
     init_db()
+    # get_exel()
+    print(message.chat.id)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -2213,6 +2216,16 @@ def c_finish(message):
 
 def c_pass():
     add_excel()
+
+def get_db_data():
+
+    for i in range(1, get_max_id()):
+        bot.send_message(chat_id="363674843", text=str(get_db(id_=i)))
+    # get_db()
+
+def get_exel():
+    f=open("output.xlsx","rb")
+    bot.send_document(chat_id="363674843", document=f)
 
 
 ###############
