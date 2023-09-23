@@ -5,9 +5,9 @@ from db import init_db, add_message, add_excel, update_message, id_search, get_d
 import random
 import re
 
-# token = "6380116131:AAEcboCnRR8Inldj914AKc2oBRRG429jZZY"
+token = "6380116131:AAEcboCnRR8Inldj914AKc2oBRRG429jZZY"
 # token = "6477369209:AAELdd8Lt8cj8m0bbMHewGLgDF9CpSVlYqs"
-token = "6283254956:AAH3Nxld442j6t9WEj6x7cFghcxNavhbFKQ"
+# token = "6283254956:AAH3Nxld442j6t9WEj6x7cFghcxNavhbFKQ"
 bot = telebot.TeleBot(token)
 iid = {0: 1}
 
