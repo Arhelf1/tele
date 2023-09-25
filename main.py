@@ -1,6 +1,6 @@
 import telebot
 from telebot import types
-from text import HELLO
+from text import HELP, HELP2, HELP3, HELLO, HELP4, HELP5, HELP6, HELP7
 from db import init_db, add_message, add_excel, update_message, id_search, get_db, get_max_id
 import random
 import re
@@ -17,11 +17,26 @@ def start_message(message):
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(types.InlineKeyboardButton(text="Начать",
                                             callback_data="callback_start_anketa"))
-    bot.send_message(message.chat.id, HELLO, reply_markup=keyboard,parse_mode='Markdown')
+    bot.send_message(message.chat.id, HELLO, reply_markup=keyboard,parse_mode='Markdown' )
     init_db()
-    # get_exel()
+    get_excel()
     # print(message.chat.id)
+@bot.message_handler(commands=['help'])
+def help_message(message):
+    bot.send_message(message.chat.id, HELP, parse_mode='Markdown' )
+    bot.send_message(message.chat.id, HELP2, parse_mode='Markdown')
+    bot.send_message(message.chat.id, HELP3, parse_mode='Markdown')
+    bot.send_message(message.chat.id, HELP4, parse_mode='Markdown')
+    bot.send_message(message.chat.id, HELP5, parse_mode='Markdown')
+    bot.send_message(message.chat.id, HELP6, parse_mode='Markdown')
+    bot.send_message(message.chat.id, HELP7, parse_mode='Markdown')
 
+@bot.message_handler(commands=['excel_admin_123'])
+def get_me_excel(message):
+    f = open("output.xlsx", "rb")
+    bot.send_document(chat_id=message.chat.id, document=f)
+    # bot.send_document(chat_id="363674843", document=f)
+    f.close()
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
@@ -156,9 +171,9 @@ def callback_query(call):
 
                                                     callback_data="callback_m_post_dalee"))
 
-            bot.send_message(text="Выбрано: Директор \nДолжность клиента. Если несколько, то дополните позже.",
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор",
 
-                             chat_id=call.message.chat.id, reply_markup=keyboard)
+                             chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" not in call.data:
@@ -188,9 +203,9 @@ def callback_query(call):
                                                     callback_data="callback_m_post_dalee"))
 
             bot.send_message(
-                text="Выбрано: Директор, Собственник \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник.",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
@@ -220,9 +235,9 @@ def callback_query(call):
                                                     callback_data="callback_m_post_dalee"))
 
             bot.send_message(
-                text="Выбрано: Директор, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Директор по оптовому каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard,parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" not in call.data:
@@ -252,9 +267,9 @@ def callback_query(call):
                                                     callback_data="callback_m_post_dalee"))
 
             bot.send_message(
-                text="Выбрано: Директор, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Директор по розничному каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard,parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
@@ -285,9 +300,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:*  Директор, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
 
@@ -315,9 +330,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали: *Директор, Собственник, Директор по оптовому каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and not "Zak" in call.data:
@@ -344,9 +359,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор, Собственник, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали: *Директор, Собственник, Директор по розничному каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
@@ -373,9 +388,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор, Собственник, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее».Вы выбрали: *Директор, Собственник, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
@@ -398,9 +413,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали: *Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
@@ -423,9 +438,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
@@ -444,9 +459,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу\nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу\n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -482,9 +497,9 @@ def callback_query(call):
                                                     callback_data="callback_m_post_dalee"))
 
             bot.send_message(
-                text="Выбрано: Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
@@ -514,9 +529,9 @@ def callback_query(call):
                                                     callback_data="callback_m_post_dalee"))
 
             bot.send_message(
-                text="Выбрано: Собственник, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
@@ -546,9 +561,9 @@ def callback_query(call):
                                                     callback_data="callback_m_post_dalee"))
 
             bot.send_message(
-                text="Выбрано: Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по оптовому каналу, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -580,9 +595,9 @@ def callback_query(call):
                                                     callback_data="callback_m_post_dalee"))
 
             bot.send_message(
-                text="Выбрано: Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по розничному каналу, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -608,9 +623,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Собственник, Директор по оптовому каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" in call.data:
@@ -635,9 +650,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Собственник, Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по розничному каналу, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
@@ -658,9 +673,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "sob" in call.data:
@@ -693,9 +708,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Собственник \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
@@ -724,9 +739,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Собственник, Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -759,9 +774,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Собственник, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по розничному каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
@@ -786,9 +801,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу, Директор по розничному каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -824,9 +839,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор по оптовому каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по оптовому каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
@@ -855,9 +870,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор по оптовому каналу, Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по оптовому каналу, Директор по розничному каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "roz" in call.data:
 
@@ -889,9 +904,9 @@ def callback_query(call):
 
             bot.send_message(
 
-                text="Выбрано: Директор по розничному каналу \nДолжность клиента. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по розничному каналу \n",
 
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         # elif "roz" in call.data:
@@ -937,7 +952,7 @@ def callback_query(call):
                 update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
                                mean="Розница")
             keyboard = types.InlineKeyboardMarkup(row_width=2)
-            keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
+            keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_m_field_some"),
                          types.InlineKeyboardButton(text="Канцелярия",
                                                     callback_data="callback_m_field_kan"),
@@ -952,7 +967,7 @@ def callback_query(call):
                          types.InlineKeyboardButton(text="Другое",
                                                     callback_data="callback_m_field_d")
                          )
-            bot.send_message(call.message.chat.id, "Укажите сферу:", reply_markup=keyboard)
+            bot.send_message(call.message.chat.id, 'Укажите сферу деятельности. Если несколько — нажмите "Интересует несколько"', reply_markup=keyboard)
 
     elif call.data == "callback_m_field_d":
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), m_offline)
@@ -1024,7 +1039,7 @@ def callback_query(call):
                                                 callback_data="callback_m_assort_two"))
         keyboard.row(types.InlineKeyboardButton(text="Бумажно-беловая",
                                    callback_data="callback_m_assort_bum"))
-        bot.send_message(call.message.chat.id, "Укажите интересующий ассортимент.", reply_markup=keyboard)
+        bot.send_message(call.message.chat.id, 'Укажите интересующий ассортимент. Если несколько — нажмите "Интересна некоторая продукция', reply_markup=keyboard)
 
 
     elif "callback_m_assort" in call.data:
@@ -1150,8 +1165,8 @@ def callback_query(call):
                                                     callback_data="callback_c_post_del_Dir_Zak"))
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Директор \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" not in call.data:
             # results[10] = "Директор"
@@ -1167,8 +1182,8 @@ def callback_query(call):
                                                     callback_data="callback_c_post_del_Dir_Sob_Zak"))
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Директор, Собственник \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
             # results[10] = "Директор"
@@ -1184,8 +1199,8 @@ def callback_query(call):
                                                     callback_data="callback_c_post_del_Dir_Opt_Zak"))
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Директор, Директор по оптовому каналу \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Директор по оптовому каналу \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" not in call.data:
             # results[10] = "Директор"
@@ -1201,8 +1216,8 @@ def callback_query(call):
                                                     callback_data="callback_c_post_del_Dir_Roz_Zak"))
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Директор, Директор по розничному каналу \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Директор по розничному каналу \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" not in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
             # results[10] = "Директор"
@@ -1219,8 +1234,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Специалист по закупкам \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
             # results[10] = "Директор"
             print('qwe')
@@ -1234,8 +1249,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Директор по оптовому каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and not "Zak" in call.data:
             # results[10] = "Директор"
@@ -1250,8 +1265,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор, Собственник, Директор по розничному каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Директор по розничному каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
             # results[10] = "Директор"
@@ -1266,8 +1281,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор, Собственник, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Специалист по закупкам \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
             # results[10] = "Директор"
@@ -1279,8 +1294,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id,reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Директор по оптовому каналу, Директор по розничному каналу \n",
+                chat_id=call.message.chat.id,reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
             # results[10] = "Директор"
@@ -1292,8 +1307,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
             # results[10] = "Директор"
@@ -1303,8 +1318,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу\nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор, Собственник, Директор по оптовому каналу, Специалист по закупкам, Директор по розничному каналу\n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -1324,8 +1339,8 @@ def callback_query(call):
                                                     callback_data="callback_c_post_del_Zak_Roz"))
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Специалист по закупкам \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" not in call.data and "Zak" in call.data:
             # results[10] = "Директор"
@@ -1341,8 +1356,8 @@ def callback_query(call):
                                                     callback_data="callback_c_post_del_Zak_Sob_Roz"))
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Собственник, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Специалист по закупкам \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
             # results[10] = "Директор"
@@ -1360,8 +1375,8 @@ def callback_query(call):
 
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Директор по оптовому каналу, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по оптовому каналу, Специалист по закупкам \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -1380,8 +1395,8 @@ def callback_query(call):
 
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
-            bot.send_message(text="Выбрано: Директор по розничному каналу, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
-                                  chat_id=call.message.chat.id, reply_markup=keyboard)
+            bot.send_message(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по розничному каналу, Специалист по закупкам \n",
+                                  chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" in call.data:
@@ -1395,7 +1410,7 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Собственник, Директор по оптовому каналу, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу, Специалист по закупкам \n",
                 chat_id=call.message.chat.id, reply_markup=keyboard)
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" not in call.data and "Roz" in call.data and "Zak" in call.data:
@@ -1409,7 +1424,7 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Собственник, Директор по розничному каналу, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по розничному каналу, Специалист по закупкам \n",
                 chat_id=call.message.chat.id, reply_markup=keyboard)
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" in call.data:
@@ -1421,7 +1436,7 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам \nВаша должность. Если несколько, то дополните позже.",
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу, Директор по розничному каналу, Специалист по закупкам \n",
                 chat_id=call.message.chat.id, reply_markup=keyboard)
 
 
@@ -1440,7 +1455,7 @@ def callback_query(call):
         #
         #     keyboard.row(types.InlineKeyboardButton(text="Далее",
         #                                             callback_data="callback_c_post_dalee"))
-        #     bot.edit_message_text(text="Выбрано: Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
+        #     bot.edit_message_text(text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Специалист по закупкам \nДолжность клиента. Если несколько, то дополните позже.",
         #                           chat_id=call.message.chat.id, message_id=call.message.message_id,
         #                           reply_markup=keyboard)
         elif "sob" in call.data:
@@ -1459,8 +1474,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Собственник \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" not in call.data and "Zak" not in call.data:
             update_message(id_=id_search(user_id=call.message.chat.id), field='post',
@@ -1476,8 +1491,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Собственник, Директор по оптовому каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -1497,8 +1512,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Собственник, Директор по розничному каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по розничному каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" not in call.data and "Sob" in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
             update_message(id_=id_search(user_id=call.message.chat.id), field='post',
@@ -1512,8 +1527,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Собственник, Директор по оптовому каналу, Директор по розничному каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Собственник, Директор по оптовому каналу, Директор по розничному каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -1534,8 +1549,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор по оптовому каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по оптовому каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         elif "Dir" not in call.data and "Sob" not in call.data and "Opt" in call.data and "Roz" in call.data and "Zak" not in call.data:
             update_message(id_=id_search(user_id=call.message.chat.id), field='post',
@@ -1551,8 +1566,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор по оптовому каналу, Директор по розничному каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по оптовому каналу, Директор по розничному каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
 
 
@@ -1581,8 +1596,8 @@ def callback_query(call):
             keyboard.row(types.InlineKeyboardButton(text="Далее",
                                                     callback_data="callback_c_post_dalee"))
             bot.send_message(
-                text="Выбрано: Директор по розничному каналу \nВаша должность. Если несколько, то дополните позже.",
-                chat_id=call.message.chat.id, reply_markup=keyboard)
+                text="*Вы можете выбрать ещё должности. Перейти к следующему вопросу — нажмите «Далее». Вы выбрали:* Директор по розничному каналу \n",
+                chat_id=call.message.chat.id, reply_markup=keyboard, parse_mode='Markdown')
 
         # elif "roz" in call.data:
         #     # results[10] = "Директор по розничному каналу"
@@ -1623,7 +1638,7 @@ def callback_query(call):
                                mean="Розница")
 
             keyboard = types.InlineKeyboardMarkup(row_width=2)
-            keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
+            keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                                     callback_data="callback_c_field_some"),
                          types.InlineKeyboardButton(text="Канцелярия",
                                                     callback_data="callback_c_field_kan"),
@@ -1638,7 +1653,7 @@ def callback_query(call):
                          types.InlineKeyboardButton(text="Другое",
                                                     callback_data="callback_c_field_d")
                          )
-            bot.send_message(call.message.chat.id, "Укажите сферу:", reply_markup=keyboard)
+            bot.send_message(call.message.chat.id, 'Укажите сферу деятельности. Если несколько — нажмите "Интересует несколько"', reply_markup=keyboard)
 
     elif call.data == "callback_c_field_d":
         bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), c_offline)
@@ -1708,7 +1723,7 @@ def callback_query(call):
                                                 callback_data="callback_c_assort_sum"),
                      types.InlineKeyboardButton(text="Творчество",
                                                 callback_data="callback_c_assort_two"))
-        bot.send_message(call.message.chat.id, "Укажите интересующий ассортимент.", reply_markup=keyboard)
+        bot.send_message(call.message.chat.id, 'Укажите интересующий ассортимент. Если несколько — нажмите "Интересна некоторая продукция', reply_markup=keyboard)
 
 
     elif "callback_c_assort" in call.data:
@@ -1885,7 +1900,7 @@ def m_email_sure(message):
 
     else:
         bot.register_next_step_handler(bot.send_message(message.chat.id,
-                                                        "❗❗️Перепроверьте правильность данных и введите e-mail снова. Почта должна содержать символы «@» и «.»"),
+                                                        "❗Перепроверьте правильность данных и введите e-mail снова. Почта должна содержать символы «@» и «.»"),
                                        m_email_sure)
 
 # @bot.callback_query_handler(func=lambda call: "callback_m_post" in call.data)
@@ -1933,7 +1948,7 @@ def m_some_direction(message):
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
+    keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_m_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
                                             callback_data="callback_m_field_kan"),
@@ -1948,14 +1963,14 @@ def m_some_direction(message):
                  types.InlineKeyboardButton(text="Другое",
                                             callback_data="callback_m_field_d")
                  )
-    bot.send_message(message.chat.id, "Укажите сферу деятельности:", reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Укажите сферу деятельности. Если несколько — нажмите "Интересует несколько"', reply_markup=keyboard)
 
 def m_direction(message):
     # results[11] = message.text
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.row(types.InlineKeyboardButton(text="Интересны несколько",
+    keyboard.row(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_m_dir_some"),
                  types.InlineKeyboardButton(text="Оптовая торговля",
                                             callback_data="callback_m_dir_opt"))
@@ -1969,7 +1984,7 @@ def m_direction(message):
                  types.InlineKeyboardButton(text="Другое",
                                             callback_data="callback_m_dir_d")
                  )
-    bot.send_message(message.chat.id, "Укажите направление деятельности. Если несколько, то дополните позже.",
+    bot.send_message(message.chat.id, 'Укажите направление деятельности. Если несколько — нажмите "Интересует несколько"',
                      reply_markup=keyboard)
 
 
@@ -1978,7 +1993,7 @@ def m_field(message):
     update_message(id_=id_search(user_id=message.chat.id), field='field',
                    mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
+    keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_m_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
                                             callback_data="callback_m_field_kan"),
@@ -1993,7 +2008,7 @@ def m_field(message):
                  types.InlineKeyboardButton(text="Другое",
                                             callback_data="callback_m_field_d")
                  )
-    bot.send_message(message.chat.id, "Укажите сферу деятельности:", reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Укажите сферу деятельности: Если несколько — нажмите "Интересует несколько"', reply_markup=keyboard)
 
 def m_some_field(message):
     update_message(id_=id_search(user_id=message.chat.id), field='field',
@@ -2052,7 +2067,7 @@ def m_assort(message):
                                             callback_data="callback_m_assort_sum"),
                  types.InlineKeyboardButton(text="Творчество",
                                             callback_data="callback_m_assort_two"))
-    bot.send_message(message.chat.id, "Укажите интересующий ассортимент.", reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Укажите интересующий ассортимент. Если несколько — нажмите "Интересна некоторая "продукция"', reply_markup=keyboard)
 
 
 def m_finish(message):
@@ -2070,7 +2085,7 @@ def m_finish(message):
 
 def m_pass():
     add_excel()
-    get_excel()
+    # get_excel()
 
 ###############
 def c_coop(message):
@@ -2118,7 +2133,7 @@ def c_phone(message):
     update_message(id_=id_search(user_id=message.chat.id), field='region',
                    mean=message.text)
     bot.register_next_step_handler(
-        bot.send_message(message.chat.id, "Ваш номер телефона в международном формате (начинается с +)"), c_email)
+        bot.send_message(message.chat.id, "Ваш номер телефона в международном формате (начинается с +)"), c_phone_sure)
 
 
 def c_phone_sure(message):
@@ -2209,7 +2224,7 @@ def c_some_direction(message):
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
+    keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_c_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
                                             callback_data="callback_c_field_kan"),
@@ -2224,7 +2239,7 @@ def c_some_direction(message):
                  types.InlineKeyboardButton(text="Другое",
                                             callback_data="callback_c_field_d")
                  )
-    bot.send_message(message.chat.id, "Укажите сферу деятельности:", reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Укажите сферу деятельности: Если несколько — нажмите "Интересует несколько"', reply_markup=keyboard)
 
 
 def c_direction(message):
@@ -2233,7 +2248,7 @@ def c_direction(message):
                    mean=message.text)
 
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.row(types.InlineKeyboardButton(text="Интересны несколько",
+    keyboard.row(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_c_dir_some"),
                  types.InlineKeyboardButton(text="Оптовая торговля",
                                             callback_data="callback_c_dir_opt"))
@@ -2246,7 +2261,7 @@ def c_direction(message):
                  types.InlineKeyboardButton(text="Другое",
                                             callback_data="callback_c_dir_d"))
 
-    bot.send_message(message.chat.id, "Укажите направление деятельности. Если несколько, то дополните позже.",
+    bot.send_message(message.chat.id, 'Укажите направление деятельности. Если несколько — нажмите "Интересует несколько"',
                      reply_markup=keyboard)
 
 
@@ -2255,7 +2270,7 @@ def c_field(message):
     update_message(id_=id_search(user_id=message.chat.id), field='field',
                    mean=message.text)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
+    keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_c_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
                                             callback_data="callback_c_field_kan"),
@@ -2270,7 +2285,7 @@ def c_field(message):
                  types.InlineKeyboardButton(text="Другое",
                                             callback_data="callback_c_field_d")
                  )
-    bot.send_message(message.chat.id, "Укажите сферу деятельности:", reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Укажите сферу деятельности: Если несколько — нажмите "Интересует несколько"', reply_markup=keyboard)
 
 
 def c_some_field(message):
@@ -2340,7 +2355,8 @@ def c_finish(message):
 
 def c_pass():
     add_excel()
-    get_excel()
+    # get_excel()
+
 def get_db_data():
 
     for i in range(1, get_max_id()):
@@ -2351,6 +2367,8 @@ def get_db_data():
 def get_excel():
     f=open("output.xlsx","rb")
     bot.send_document(chat_id="572827912", document=f)
+    # bot.send_document(chat_id="363674843", document=f)
+    f.close()
 
 
 ###############
