@@ -1954,7 +1954,7 @@ def m_direction(message):
     # results[11] = message.text
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(types.InlineKeyboardButton(text="Интересны несколько направлений",
                                             callback_data="callback_m_dir_some"),
                  types.InlineKeyboardButton(text="Оптовая торговля",
@@ -2231,7 +2231,7 @@ def c_direction(message):
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
 
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(types.InlineKeyboardButton(text="Интересны несколько направлений",
                                             callback_data="callback_c_dir_some"),
                  types.InlineKeyboardButton(text="Оптовая торговля",
