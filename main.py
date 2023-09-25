@@ -1954,15 +1954,16 @@ def m_direction(message):
     # results[11] = message.text
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
-    keyboard.add(types.InlineKeyboardButton(text="Интересны несколько направлений",
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(types.InlineKeyboardButton(text="Интересны несколько",
                                             callback_data="callback_m_dir_some"),
                  types.InlineKeyboardButton(text="Оптовая торговля",
-                                            callback_data="callback_m_dir_opt"),
-                 types.InlineKeyboardButton(text="Корпоративные продажи",
-                                            callback_data="callback_m_dir_kor"),
-                 types.InlineKeyboardButton(text="Интернет",
-                                            callback_data="callback_m_dir_int"),
+                                            callback_data="callback_m_dir_opt"))
+    keyboard.row(types.InlineKeyboardButton(text="Корпоративные продажи",
+                                            callback_data="callback_m_dir_kor"))
+    keyboard.row(types.InlineKeyboardButton(text="Интернет",
+                                            callback_data="callback_m_dir_int"))
+    keyboard.row(
                  types.InlineKeyboardButton(text="Розница",
                                             callback_data="callback_m_dir_roz"),
                  types.InlineKeyboardButton(text="Другое",
@@ -2231,20 +2232,20 @@ def c_direction(message):
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
 
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
-    keyboard.add(types.InlineKeyboardButton(text="Интересны несколько направлений",
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(types.InlineKeyboardButton(text="Интересны несколько",
                                             callback_data="callback_c_dir_some"),
                  types.InlineKeyboardButton(text="Оптовая торговля",
-                                            callback_data="callback_c_dir_opt"),
-                 types.InlineKeyboardButton(text="Корпоративные продажи",
-                                            callback_data="callback_c_dir_kor"),
-                 types.InlineKeyboardButton(text="Интернет",
-                                            callback_data="callback_c_dir_int"),
-                 types.InlineKeyboardButton(text="Розница",
+                                            callback_data="callback_c_dir_opt"))
+    keyboard.row(types.InlineKeyboardButton(text="Корпоративные продажи",
+                                            callback_data="callback_c_dir_kor"))
+    keyboard.row(types.InlineKeyboardButton(text="Интернет",
+                                            callback_data="callback_c_dir_int"))
+    keyboard.row(types.InlineKeyboardButton(text="Розница",
                                             callback_data="callback_c_dir_roz"),
                  types.InlineKeyboardButton(text="Другое",
-                                            callback_data="callback_c_dir_d")
-                 )
+                                            callback_data="callback_c_dir_d"))
+
     bot.send_message(message.chat.id, "Укажите направление деятельности. Если несколько, то дополните позже.",
                      reply_markup=keyboard)
 
