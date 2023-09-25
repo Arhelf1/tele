@@ -2364,12 +2364,12 @@ def get_exсel():
 #     bot.delete_message(message.chat.id, message.message_id - 1, 1)
 
 
-# bot.infinity_polling()
+bot.infinity_polling()
 
-while True:
-    try:
-        bot.polling(none_stop = True)
-    except Exception as e:
-        print(e)
+# while True:
+#     try:
+#         bot.polling(none_stop = True)
+#     except Exception as e:
+#         print(e)
         # bot.send_message(chat_id="363674843", text="Рестарт")
         # bot.send_message(chat_id="572827912", text="Рестарт")
