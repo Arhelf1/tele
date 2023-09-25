@@ -961,7 +961,7 @@ def callback_query(call):
     elif "callback_m_field" in call.data:
         if "some" in call.data:
             bot.register_next_step_handler(
-                bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующей Вас сфера:\n"
+                bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующей Вас сферы:\n"
                                                         "1. Канцелярия\n"
                                                         "2. Детские товары\n"
                                                         "3. Книги\n"
@@ -2070,7 +2070,7 @@ def m_finish(message):
 
 def m_pass():
     add_excel()
-    get_exсel()
+    get_excel()
 
 ###############
 def c_coop(message):
@@ -2340,7 +2340,7 @@ def c_finish(message):
 
 def c_pass():
     add_excel()
-    get_exсel()
+    get_excel()
 def get_db_data():
 
     for i in range(1, get_max_id()):
@@ -2348,7 +2348,7 @@ def get_db_data():
     # get_db()
 
 
-def get_exсel():
+def get_excel():
     f=open("output.xlsx","rb")
     bot.send_document(chat_id="572827912", document=f)
 
