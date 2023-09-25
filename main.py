@@ -2098,6 +2098,7 @@ def m_finish(message):
 
 def m_pass():
     add_excel()
+    print("Сохранено")
     # get_excel()
 
 ###############
@@ -2381,6 +2382,7 @@ def c_finish(message):
 
 def c_pass():
     add_excel()
+    print('Сохранено')
     # get_excel()
 
 def get_db_data():
