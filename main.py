@@ -1,6 +1,6 @@
 import telebot
 from telebot import types
-from text import HELP, HELP2, HELP3, HELLO, HELP4, HELP5, HELP6, HELP7
+from text import HELP, HELP2, HELP3, HELLO, HELP4, HELP5, HELP6, HELP7, FIELD, ASSORT, DIRECTION
 from db import init_db, add_message, add_excel, update_message, id_search, get_db, get_max_id
 import random
 import re
@@ -924,7 +924,7 @@ def callback_query(call):
                                            m_direction)
 
     elif call.data == "callback_m_dir_d":
-        bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), m_field)
+        bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните направление деятельности"), m_field)
 
     elif "callback_m_dir" in call.data:
         if "some" in call.data:
@@ -1608,7 +1608,7 @@ def callback_query(call):
                                        c_direction)
 
     elif call.data == "callback_c_dir_d":
-        bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните данные"), c_field)
+        bot.register_next_step_handler(bot.send_message(call.message.chat.id, "Уточните направление деятельности"), c_field)
 
 
     elif "callback_c_dir" in call.data:
@@ -1945,8 +1945,12 @@ def m_point(message):
     bot.register_next_step_handler(bot.send_message(message.chat.id, "Укажите название торговой точки"), m_direction)
 
 def m_some_direction(message):
+    s = ''
+    for i in range(5):
+        if str(i + 1) in message.text:
+            s = s + ' ' + DIRECTION[i]
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
-                   mean=message.text)
+                   mean=s)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_m_field_some"),
@@ -2010,9 +2014,14 @@ def m_field(message):
                  )
     bot.send_message(message.chat.id, 'Укажите сферу деятельности: Если несколько — нажмите "Интересует несколько"', reply_markup=keyboard)
 
+
 def m_some_field(message):
+    s = ''
+    for i in range(5):
+        if str(i + 1) in message.text:
+            s = s + ' ' + FIELD[i]
     update_message(id_=id_search(user_id=message.chat.id), field='field',
-                   mean=message.text)
+                   mean=s)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(types.InlineKeyboardButton(text="✅Есть",
                                             callback_data="callback_m_offline_yes"),
@@ -2037,8 +2046,12 @@ def m_offline(message):
 
 
 def m_some_assort(message):
+    s = ''
+    for i in range(5):
+        if str(i + 1) in message.text:
+            s = s + ' ' + ASSORT[i]
     update_message(id_=id_search(user_id=message.chat.id), field='interest',
-                   mean=message.text)
+                   mean=s)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(types.InlineKeyboardButton(text="✅Да",
                                             callback_data="callback_m_comment_yes"),
@@ -2221,8 +2234,12 @@ def c_point(message):
 
 
 def c_some_direction(message):
+    s = ''
+    for i in range(5):
+        if str(i + 1) in message.text:
+            s = s + ' ' + DIRECTION[i]
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
-                   mean=message.text)
+                   mean=s)
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Интересует несколько",
                                             callback_data="callback_c_field_some"),
@@ -2289,8 +2306,12 @@ def c_field(message):
 
 
 def c_some_field(message):
+    s = ''
+    for i in range(5):
+        if str(i + 1) in message.text:
+            s = s + ' ' + FIELD[i]
     update_message(id_=id_search(user_id=message.chat.id), field='field',
-                   mean=message.text)
+                   mean=s)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(types.InlineKeyboardButton(text="✅Есть",
                                             callback_data="callback_c_offline_yes"),
@@ -2298,6 +2319,7 @@ def c_some_field(message):
                                             callback_data="callback_c_offline_no"),
                  )
     bot.send_message(message.chat.id, "Наличие оффлайн точек:", reply_markup=keyboard)
+
 
 def c_offline(message):
     # results[12] = message.text
@@ -2312,8 +2334,12 @@ def c_offline(message):
     bot.send_message(message.chat.id, "Наличие оффлайн точек:", reply_markup=keyboard)
 
 def c_some_assort(message):
+    s = ''
+    for i in range(5):
+        if str(i + 1) in message.text:
+            s = s + ' ' + ASSORT[i]
     update_message(id_=id_search(user_id=message.chat.id), field='interest',
-                   mean=message.text)
+                   mean=s)
     keyboard = types.InlineKeyboardMarkup(row_width=3)
     keyboard.add(types.InlineKeyboardButton(text="✅Да",
                                             callback_data="callback_c_comment_yes"),
