@@ -14,7 +14,7 @@ iid = {0: 1}
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    keyboard = types.InlineKeyboardMarkup(row_width=4)
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(types.InlineKeyboardButton(text="Начать",
                                             callback_data="callback_start_anketa"))
     bot.send_message(message.chat.id, HELLO, reply_markup=keyboard,parse_mode='Markdown')
@@ -936,7 +936,7 @@ def callback_query(call):
                 # results[11] = "Розница"
                 update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
                                mean="Розница")
-            keyboard = types.InlineKeyboardMarkup(row_width=3)
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
             keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
                                             callback_data="callback_m_field_some"),
                          types.InlineKeyboardButton(text="Канцелярия",
@@ -961,7 +961,7 @@ def callback_query(call):
     elif "callback_m_field" in call.data:
         if "some" in call.data:
             bot.register_next_step_handler(
-                bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующего Вас ассортимента:\n"
+                bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующей Вас сфера:\n"
                                                         "1. Канцелярия\n"
                                                         "2. Детские товары\n"
                                                         "3. Книги\n"
@@ -1622,7 +1622,7 @@ def callback_query(call):
                 update_message(id_=id_search(user_id=call.message.chat.id), field='direction',
                                mean="Розница")
 
-            keyboard = types.InlineKeyboardMarkup(row_width=3)
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
             keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
                                                     callback_data="callback_c_field_some"),
                          types.InlineKeyboardButton(text="Канцелярия",
@@ -1646,7 +1646,7 @@ def callback_query(call):
     elif "callback_c_field" in call.data:
         if "some" in call.data:
             bot.register_next_step_handler(
-                bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующего Вас ассортимента:\n"
+                bot.send_message(call.message.chat.id, ("Введите через пробел номер интересующей Вас сферы:\n"
                                                         "1. Канцелярия\n"
                                                         "2. Детские товары\n"
                                                         "3. Книги\n"
@@ -1932,7 +1932,7 @@ def m_point(message):
 def m_some_direction(message):
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
                                             callback_data="callback_m_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
@@ -1976,7 +1976,7 @@ def m_field(message):
     # results[11] = message.text
     update_message(id_=id_search(user_id=message.chat.id), field='field',
                    mean=message.text)
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
                                             callback_data="callback_m_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
@@ -2207,7 +2207,7 @@ def c_point(message):
 def c_some_direction(message):
     update_message(id_=id_search(user_id=message.chat.id), field='direction',
                    mean=message.text)
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
                                             callback_data="callback_c_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
@@ -2253,7 +2253,7 @@ def c_field(message):
     # results[11] = message.text
     update_message(id_=id_search(user_id=message.chat.id), field='field',
                    mean=message.text)
-    keyboard = types.InlineKeyboardMarkup(row_width=3)
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Несколько сфер",
                                             callback_data="callback_c_field_some"),
                  types.InlineKeyboardButton(text="Канцелярия",
@@ -2369,5 +2369,6 @@ while True:
     try:
         bot.polling(none_stop = True)
     except Exception as e:
-        bot.send_message(chat_id="363674843", text="Рестарт")
-        bot.send_message(chat_id="572827912", text="Рестарт")
+        print(e)
+        # bot.send_message(chat_id="363674843", text="Рестарт")
+        # bot.send_message(chat_id="572827912", text="Рестарт")
